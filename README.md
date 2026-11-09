@@ -13,7 +13,10 @@ NetSuite Portlet script (`NC_SelfServicePortlet.js`) that shows a dashboard of s
 
 1. Searches all active (`isinactive = F`) records of `customrecord_nc_self_serv_req`, sorted by name (up to 1000).
 2. Renders one card per record in a responsive grid.
-3. Each card shows the title, request type, action links and instructions.
+3. Each card shows the title, request type, three buttons and instructions.
+   - **Row 1:** Create Request and Download Documentation, side by side.
+   - **Row 2:** Upload Document, full width.
+   - A button is hidden if its URL field is empty.
 4. If no records exist, an empty-state message is shown. Errors are logged via `N/log` and a short message is displayed in the portlet.
 
 ## Record fields used
@@ -24,7 +27,20 @@ NetSuite Portlet script (`NC_SelfServicePortlet.js`) that shows a dashboard of s
 | `custrecord_nc_req_type` | Request type label |
 | `custrecord_nc_click_req_selfserv` | URL for the **Create Request** button |
 | `custrecord_nc_template_` | URL for the **Download Documentation** button |
+| `custrecord_upload_document` | URL for the **Upload Document** button |
 | `custrecord_nc_instructions_` | Rich text instructions (rendered as HTML) |
+
+## Button labels
+
+Default labels are *Create Request*, *Download Documentation* and *Upload Document*. Tiles whose name matches an entry in `TILE_LABELS` (case-insensitive, whitespace-normalised) use custom labels instead:
+
+| Tile name | Create | Download | Upload |
+|---|---|---|---|
+| New Inventory Item | Create Item Request | Download Item Template | Upload Item Template |
+| New Labour (Service) Item Requests | Create Item Request | Download Item Template | Upload Item Template |
+| New Non-Inventory Item - Non Labour | Create Item Request | Download Item Template | Upload Item Template |
+
+To customise another tile, add its lowercase name to `TILE_LABELS` in the script.
 
 ## Deployment
 
@@ -39,4 +55,5 @@ NetSuite Portlet script (`NC_SelfServicePortlet.js`) that shows a dashboard of s
 
 ## Change log
 
+- 2026-11-09: Layout update. Three uniform blue buttons in two rows, new Upload Document button (`custrecord_upload_document`) and per-tile custom button labels.
 - 2026-11-09: Initial commit of the portlet and README.
