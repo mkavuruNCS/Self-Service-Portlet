@@ -1,10 +1,36 @@
 /**
  * @NApiVersion 2.0
  * @NScriptType Portlet
- * SB1
+ * SB1 - three buttons: Create Request + Download Documentation (row 1), Upload Document (row 2)
  */
 define(['N/log', 'N/search'], function (log, search) {
     var RECORD_TYPE = 'customrecord_nc_self_serv_req';
+
+    // Default button names for every tile
+    var DEFAULT_LABELS = {
+        create: 'Create Request',
+        download: 'Download Documentation',
+        upload: 'Upload Document'
+    };
+
+    // Custom button names for specific tiles.
+    // Key = tile Name exactly as on the NC Self-Service Request record (case-insensitive).
+    var ITEM_LABELS = {
+        create: 'Create Item Request',
+        download: 'Download Item Template',
+        upload: 'Upload Item Template'
+    };
+
+    var TILE_LABELS = {
+        'new inventory item': ITEM_LABELS,
+        'new labour (service) item requests': ITEM_LABELS,
+        'new non-inventory item - non labour': ITEM_LABELS
+    };
+
+    function getLabels(title) {
+        var key = String(title || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        return TILE_LABELS[key] || DEFAULT_LABELS;
+    }
 
     function escapeHtml(value) {
         return String(value || '')
@@ -52,6 +78,9 @@ define(['N/log', 'N/search'], function (log, search) {
                         name: 'custrecord_nc_template_'
                     }),
                     search.createColumn({
+                        name: 'custrecord_upload_document'
+                    }),
+                    search.createColumn({
                         name: 'custrecord_nc_instructions_'
                     })
                 ]
@@ -91,10 +120,24 @@ define(['N/log', 'N/search'], function (log, search) {
                     name: 'custrecord_nc_template_'
                 });
 
+                var uploadUrl = result.getValue({
+                    name: 'custrecord_upload_document'
+                });
+
                 // This is Rich Text maintained in NetSuite.
                 var instructions = result.getValue({
                     name: 'custrecord_nc_instructions_'
                 });
+
+                var labels = getLabels(title);
+
+                // Row 1: Create + Download side by side
+                var topRow =
+                    createLink(createRequestUrl, labels.create, 'nc-btn') +
+                    createLink(documentationUrl, labels.download, 'nc-btn');
+
+                // Row 2: Upload, full width
+                var bottomRow = createLink(uploadUrl, labels.upload, 'nc-btn nc-btn-full');
 
                 cards.push(
                     '<section class="nc-request-card">' +
@@ -104,18 +147,12 @@ define(['N/log', 'N/search'], function (log, search) {
                                 escapeHtml(requestType) +
                               '</p>'
                             : '') +
-                        '<div class="nc-request-actions">' +
-                            createLink(
-                                createRequestUrl,
-                                'Create Request',
-                                'nc-primary-action'
-                            ) +
-                            createLink(
-                                documentationUrl,
-                                'Download Documentation',
-                                'nc-secondary-action'
-                            ) +
-                        '</div>' +
+                        ((topRow || bottomRow)
+                            ? '<div class="nc-request-actions">' +
+                                (topRow ? '<div class="nc-btn-row">' + topRow + '</div>' : '') +
+                                (bottomRow ? '<div class="nc-btn-row">' + bottomRow + '</div>' : '') +
+                              '</div>'
+                            : '') +
                         (instructions
                             ? '<div class="nc-request-instructions">' +
                                 instructions +
@@ -131,10 +168,13 @@ define(['N/log', 'N/search'], function (log, search) {
                     '.nc-request-card{box-sizing:border-box;padding:16px;border:1px solid #d6dbe3;border-radius:6px;background:#fff;}' +
                     '.nc-request-card h3{margin:0 0 5px;color:#24364b;font-size:16px;}' +
                     '.nc-request-type{margin:0 0 14px;color:#5b6875;font-size:13px;}' +
-                    '.nc-request-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;}' +
-                    '.nc-request-actions a{padding:7px 10px;border-radius:4px;text-decoration:none;font-size:13px;}' +
-                    '.nc-primary-action{background:#2373b9;color:#fff !important;}' +
-                    '.nc-secondary-action{border:1px solid #2373b9;color:#17619e;}' +
+                    '.nc-request-actions{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}' +
+                    '.nc-btn-row{display:flex;gap:8px;}' +
+                    '.nc-btn{flex:1 1 0;display:flex;align-items:center;justify-content:center;text-align:center;' +
+                        'box-sizing:border-box;min-height:34px;padding:7px 8px;border-radius:4px;' +
+                        'background:#2373b9;color:#fff !important;text-decoration:none;font-size:13px;line-height:1.2;}' +
+                    '.nc-btn:hover{background:#1b5e99;}' +
+                    '.nc-btn-full{flex:1 1 100%;}' +
                     '.nc-request-instructions{padding-top:12px;border-top:1px solid #e5e8ec;font-size:13px;line-height:1.45;}' +
                     '.nc-empty-message{color:#5b6875;}' +
                 '</style>' +
