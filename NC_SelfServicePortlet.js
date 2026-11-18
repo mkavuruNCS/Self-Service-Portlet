@@ -1,10 +1,11 @@
 /**
  * @NApiVersion 2.0
  * @NScriptType Portlet
- * 11/18/2026 - Document renamed to status
+ * 11/18/2026 - Custom button feild added for lable control
  */
 define(['N/log', 'N/search'], function (log, search) {
     var RECORD_TYPE = 'customrecord_nc_self_serv_req';
+    var DEFAULT_STATUS_LABEL = 'Status';
 
     function escapeHtml(value) {
         return String(value || '')
@@ -52,6 +53,9 @@ define(['N/log', 'N/search'], function (log, search) {
                         name: 'custrecord_nc_template_'
                     }),
                     search.createColumn({
+                        name: 'custrecord_nc_status_label'
+                    }),
+                    search.createColumn({
                         name: 'custrecord_nc_instructions_'
                     })
                 ]
@@ -91,6 +95,13 @@ define(['N/log', 'N/search'], function (log, search) {
                     name: 'custrecord_nc_template_'
                 });
 
+                // Per-record button text. Blank on the record falls back to 'Status'.
+                var statusLabel =
+                    result.getValue({
+                        name: 'custrecord_nc_status_label'
+                    }) ||
+                    DEFAULT_STATUS_LABEL;
+
                 // This is Rich Text maintained in NetSuite.
                 var instructions = result.getValue({
                     name: 'custrecord_nc_instructions_'
@@ -112,7 +123,7 @@ define(['N/log', 'N/search'], function (log, search) {
                             ) +
                             createLink(
                                 documentationUrl,
-                                'Status',
+                                statusLabel,
                                 'nc-secondary-action'
                             ) +
                         '</div>' +
